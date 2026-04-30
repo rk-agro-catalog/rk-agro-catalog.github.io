@@ -1,0 +1,23 @@
+# Code Owners
+
+# This file defines who is responsible for code in specific paths
+# and can automatically request reviews
+
+# Global owners - responsible for everything
+* @rk-agro-catalog
+
+# Documentation
+docs/ @rk-agro-catalog
+*.md @rk-agro-catalog
+
+# Configuration files
+.github/ @rk-agro-catalog
+*.json @rk-agro-catalog
+*.yml @rk-agro-catalog
+*.yaml @rk-agro-catalog
+
+# All HTML files
+*.html @rk-agro-catalog
+
+# All JavaScript files
+*.js @rk-agro-catalog
