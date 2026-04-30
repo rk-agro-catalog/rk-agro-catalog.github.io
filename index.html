@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#1a3d1f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="RK Agro">
+<link rel="manifest" href="manifest.json">
+<title>R.K. Agro Industries</title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCp6b-aYosCsl_U4weiD9NlKMjoqntdkcE",
+  authDomain: "rk-agro-catalog.firebaseapp.com",
+  projectId: "rk-agro-catalog",
+  storageBucket: "rk-agro-catalog.firebasestorage.app",
+  messagingSenderId: "315510886345",
+  appId: "1:315510886345:web:413f5790bcd8c8165b2218"
+});
+var auth = firebase.auth();
+var db   = firebase.firestore();
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
+try{ db.enablePersistence({synchronizeTabs:true}).catch(function(){}); }catch(e){}
+
+// ============================================================
+// CLOUDINARY CONFIG — FREE image hosting (25GB free forever)
+// Signup: cloudinary.com (free, no credit card)
+// Then replace these 2 values:
+// ============================================================
+var CLOUD_NAME   = "dpdh3s5bc";   // e.g. "rk-agro"
+var UPLOAD_PRESET = "rk_agro_unsigned"; // e.g. "rk_agro_unsigned"
+// ============================================================
+</script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f0ede8;}
+#splash{position:fixed;inset:0;background:#1a3d1f;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s;}
+.sp-logo{width:100px;height:100px;background:#c8860a;border-radius:16px;display:flex;align-items:center;justify-content:center;font:700 42px Georgia,serif;color:#fff;margin-bottom:18px;position:relative;overflow:hidden;}
+.sp-logo::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.18) 0%,transparent 55%);}
+.sp-rk{position:relative;z-index:1;}
+.sp-n1{font:700 30px Georgia,serif;color:#e8b84b;letter-spacing:3px;text-align:center;}
+.sp-n2{font-size:13px;color:rgba(255,255,255,.7);letter-spacing:6px;text-align:center;margin-top:4px;text-transform:uppercase;}
+.sp-n3{font-size:10px;color:rgba(255,255,255,.35);letter-spacing:3px;text-align:center;margin-top:2px;text-transform:uppercase;}
+.sp-badge{margin-top:14px;background:rgba(200,134,10,.22);border:1px solid rgba(200,134,10,.4);border-radius:20px;padding:5px 16px;font-size:11px;color:#e8b84b;}
+.sp-loader{position:absolute;bottom:48px;width:180px;text-align:center;}
+.sp-bg{height:3px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;}
+.sp-fill{height:100%;width:0;background:#c8860a;border-radius:3px;transition:width .15s linear;}
+.sp-txt{font-size:10px;color:rgba(255,255,255,.38);margin-top:6px;letter-spacing:1.5px;text-transform:uppercase;}
+#app{display:none;min-height:100vh;}
+.pg{display:none;}.pg.show{display:block;}
+.topbar{background:#1a3d1f;padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+.tb-em{width:34px;height:34px;background:#c8860a;border-radius:8px;display:flex;align-items:center;justify-content:center;font:700 13px Georgia,serif;color:#fff;flex-shrink:0;}
+.tb-main{font-size:13px;font-weight:600;color:#fff;flex:1;}
+.tb-sub{font-size:10px;color:rgba(255,255,255,.5);}
+.tb-out{font-size:11px;color:rgba(255,255,255,.7);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:6px 11px;cursor:pointer;}
+.lg-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:#f0ede8;}
+.lg-em{width:72px;height:72px;background:#c8860a;border-radius:12px;display:flex;align-items:center;justify-content:center;font:700 28px Georgia,serif;color:#fff;margin:0 auto 12px;}
+.lg-t1{font:600 17px Georgia,serif;color:#1a3d1f;text-align:center;}
+.lg-t2{font-size:10px;color:#999;letter-spacing:2px;text-align:center;margin-top:3px;text-transform:uppercase;}
+.lg-card{background:#fff;border-radius:16px;padding:24px;width:100%;max-width:340px;margin-top:22px;border:1px solid rgba(0,0,0,.08);}
+.lf{margin-bottom:14px;}
+.lf label{display:block;font-size:10px;color:#aaa;letter-spacing:1px;margin-bottom:5px;text-transform:uppercase;}
+.lf input{width:100%;padding:11px 13px;border:1px solid rgba(0,0,0,.12);border-radius:9px;background:#faf9f7;font-size:14px;color:#111;outline:none;font-family:inherit;}
+.lf input:focus{border-color:#1a3d1f;}
+.lg-btn{width:100%;padding:12px;background:#1a3d1f;color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
+.lg-btn:disabled{background:#aaa;}
+.lg-err{color:#c0392b;font-size:12px;margin-top:8px;text-align:center;display:none;}
+.cat-body{padding:14px;background:#f0ede8;min-height:100vh;}
+.banner{background:linear-gradient(135deg,#1a3d1f,#2d6b35,#1a3d1f);border-radius:14px;padding:16px;margin-bottom:14px;}
+.bn-top{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.bn-em{width:44px;height:44px;background:#c8860a;border-radius:9px;display:flex;align-items:center;justify-content:center;font:700 18px Georgia,serif;color:#fff;}
+.bn-n1{font:700 15px Georgia,serif;color:#fff;}
+.bn-n2{font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1.5px;margin-top:1px;text-transform:uppercase;}
+.bn-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.bst{background:rgba(255,255,255,.1);border-radius:9px;padding:9px 6px;text-align:center;}
+.bst-n{font-size:20px;font-weight:700;color:#e8b84b;}
+.bst-l{font-size:9px;color:rgba(255,255,255,.5);letter-spacing:.5px;text-transform:uppercase;margin-top:2px;}
+.bn-ct{margin-top:11px;padding-top:10px;border-top:1px solid rgba(255,255,255,.1);font-size:10px;color:rgba(255,255,255,.6);}
+.db-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:500;padding:5px 12px;border-radius:20px;margin-bottom:12px;}
+.db-pill.ok{background:#e6f4ea;color:#1e7e34;border:1px solid #b7dfc0;}
+.db-pill.load{background:#fff8e6;color:#c8860a;border:1px solid #f0d878;}
+.db-pill.err{background:#fdecea;color:#c0392b;border:1px solid #f5c6c6;}
+.db-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.db-pill.ok .db-dot{background:#1e7e34;}
+.db-pill.load .db-dot{background:#c8860a;animation:blink 1s infinite;}
+.db-pill.err .db-dot{background:#c0392b;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
+.srch{position:relative;margin-bottom:12px;}
+.srch input{width:100%;padding:11px 14px 11px 36px;border:1px solid rgba(0,0,0,.1);border-radius:9px;background:#fff;font-size:13px;color:#111;outline:none;font-family:inherit;}
+.srch svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.35;}
+.ftabs{display:flex;gap:7px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px;}
+.ftabs::-webkit-scrollbar{display:none;}
+.ftab{padding:7px 14px;border-radius:18px;font-size:12px;font-weight:600;border:1px solid rgba(0,0,0,.1);background:#fff;color:#888;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.ftab.on{background:#1a3d1f;color:#fff;border-color:#1a3d1f;}
+.sumrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.sumtxt{font-size:12px;color:#999;}.sumtxt b{color:#1a3d1f;}
+.add-btn{width:100%;padding:13px;background:#c8860a;color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:14px;font-family:inherit;}
+.grid{display:flex;flex-direction:column;gap:11px;padding-bottom:30px;}
+.card{background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:13px;overflow:hidden;}
+.card-imgs{display:flex;gap:5px;padding:10px 10px 0;}
+.cimg{width:68px;height:68px;object-fit:cover;border-radius:7px;background:#f0ede8;}
+.cph{width:68px;height:68px;border-radius:7px;background:#f5f2ed;display:flex;align-items:center;justify-content:center;font-size:24px;}
+.cmore{width:68px;height:68px;border-radius:7px;background:#f5f2ed;display:flex;align-items:center;justify-content:center;font-size:12px;color:#999;font-weight:600;}
+.card-body{padding:9px 12px 12px;}
+.c-model{font-size:10px;color:#c8860a;font-weight:600;letter-spacing:.8px;text-transform:uppercase;}
+.c-name{font-size:15px;font-weight:600;color:#111;margin:2px 0 5px;}
+.c-spec{font-size:12px;color:#888;line-height:1.65;}
+.c-desc{font-size:11px;color:#aaa;font-style:italic;margin-top:4px;}
+.c-acts{display:flex;gap:6px;margin-top:10px;}
+.c-edit{flex:1;padding:8px 4px;background:#1565C0;border:none;border-radius:7px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:4px;}
+.c-share{flex:1;padding:8px 4px;background:#25D366;border:none;border-radius:7px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:4px;}
+.c-del{padding:8px 11px;background:#E53935;border:none;border-radius:7px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;}.ov.show{display:block;}
+.sheet{position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;z-index:300;transform:translateY(100%);transition:transform .28s ease;max-height:92vh;overflow-y:auto;}
+.sheet.show{transform:translateY(0);}
+.sh-bar{width:34px;height:4px;background:#ddd;border-radius:2px;margin:13px auto 4px;}
+.sh-body{padding:4px 18px 32px;}
+.sh-title{font-size:15px;font-weight:600;color:#111;margin-bottom:16px;}
+.ff{margin-bottom:12px;}
+.ff label{display:block;font-size:10px;color:#bbb;letter-spacing:.8px;margin-bottom:4px;text-transform:uppercase;}
+.ff input,.ff textarea,.ff select{width:100%;padding:10px 12px;border:1px solid rgba(0,0,0,.12);border-radius:8px;background:#fafaf8;font-size:13px;color:#111;outline:none;font-family:inherit;-webkit-appearance:none;}
+.ff input:focus,.ff textarea:focus,.ff select:focus{border-color:#1a3d1f;}
+.ff textarea{height:68px;resize:none;}
+.img-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:7px;}
+.ithumb{position:relative;width:60px;height:60px;border-radius:7px;overflow:hidden;border:1px solid rgba(0,0,0,.1);}
+.ithumb img{width:100%;height:100%;object-fit:cover;}
+.ithumb .rm{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:17px;height:17px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
+.iadd{width:60px;height:60px;border:1.5px dashed #ccc;border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:#ccc;font-size:10px;gap:2px;background:#fafaf8;}
+.upload-progress{background:#e8f5e2;border:1px solid #a5d68a;border-radius:8px;padding:10px 12px;margin-top:8px;display:none;}
+.up-txt{font-size:11px;color:#2d7a1f;font-weight:500;margin-bottom:5px;}
+.up-bg{height:4px;background:rgba(0,0,0,.1);border-radius:3px;overflow:hidden;}
+.up-fill{height:100%;background:#2d7a1f;border-radius:3px;width:0%;transition:width .2s;}
+.setup-warn{background:#fff3e0;border:1px solid #ffcc02;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:11px;color:#7a5800;display:none;}
+.f-acts{display:flex;gap:9px;margin-top:18px;}
+.f-cancel{flex:1;padding:11px;background:#f0ede8;border:none;border-radius:9px;font-size:13px;color:#555;cursor:pointer;font-family:inherit;}
+.f-save{flex:2;padding:11px;background:#1a3d1f;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.f-save:disabled{background:#aaa;}
+.sh-hd{font-size:14px;font-weight:600;color:#111;margin-bottom:2px;}
+.sh-sd{font-size:11px;color:#aaa;margin-bottom:14px;}
+.pdf-box{background:#fffbf5;border:1px solid #ead9b5;border-radius:11px;padding:13px;display:flex;align-items:center;gap:11px;margin-bottom:16px;}
+.pdf-ic{width:38px;height:48px;background:#E53935;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;}
+.pdf-nm{font-size:13px;font-weight:600;color:#111;}
+.pdf-sz{font-size:10px;color:#bbb;margin-top:2px;}
+.sh-opts{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px;}
+.sopt{padding:13px 9px;border:1px solid rgba(0,0,0,.09);border-radius:11px;display:flex;align-items:center;gap:8px;cursor:pointer;background:#fff;}
+.sopt.wa{border-color:#25D366;background:#f0fff4;}
+.sopt svg{width:22px;height:22px;flex-shrink:0;}
+.so-l{font-size:12px;font-weight:600;color:#111;}
+.so-s{font-size:10px;color:#bbb;}
+.sh-cls{width:100%;padding:12px;background:#f0ede8;border:none;border-radius:9px;font-size:13px;color:#555;cursor:pointer;font-family:inherit;}
+.cf-ic{font-size:38px;text-align:center;margin:6px 0 10px;}
+.cf-t{font-size:15px;font-weight:600;text-align:center;color:#111;margin-bottom:5px;}
+.cf-s{font-size:13px;color:#aaa;text-align:center;margin-bottom:20px;line-height:1.5;}
+.cf-acts{display:flex;gap:9px;}
+.cf-no{flex:1;padding:11px;background:#f0ede8;border:none;border-radius:9px;font-size:13px;color:#555;cursor:pointer;font-family:inherit;}
+.cf-yes{flex:1;padding:11px;background:#E53935;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.empty{text-align:center;padding:50px 20px;color:#ccc;}
+.empty .ei{font-size:44px;margin-bottom:10px;}
+.toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%) translateY(16px);background:#1a3d1f;color:#fff;padding:10px 20px;border-radius:20px;font-size:12px;opacity:0;transition:all .25s;z-index:999;pointer-events:none;max-width:88vw;text-align:center;line-height:1.5;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="sp-logo"><span class="sp-rk">RK</span></div>
+  <div class="sp-n1">R.K.</div>
+  <div class="sp-n2">Agro</div>
+  <div class="sp-n3">Industries</div>
+  <div class="sp-badge">Est. 1998 &middot; Nasit Agro Products</div>
+  <div class="sp-loader">
+    <div class="sp-bg"><div class="sp-fill" id="spFill"></div></div>
+    <div class="sp-txt" id="spTxt">Loading...</div>
+  </div>
+</div>
+
+<div id="app">
+  <div id="lgPage" class="pg show">
+    <div class="lg-wrap">
+      <div class="lg-em">RK</div>
+      <div class="lg-t1">R.K. Agro Industries</div>
+      <div class="lg-t2">Admin Portal</div>
+      <div class="lg-card">
+        <div class="lf"><label>Email</label><input type="email" id="em" placeholder="admin@nasit.com" autocomplete="email"/></div>
+        <div class="lf"><label>Password</label><input type="password" id="pw" placeholder="Password" autocomplete="current-password"/></div>
+        <div class="lg-err" id="lerr">Wrong email or password</div>
+        <button class="lg-btn" id="lgBtn" onclick="doLogin()">Sign In</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="catPage" class="pg">
+    <div class="topbar">
+      <div class="tb-em">RK</div>
+      <div style="flex:1"><div class="tb-main">R.K. Agro Industries</div><div class="tb-sub">Product Catalog</div></div>
+      <button class="tb-out" onclick="doLogout()">Logout</button>
+    </div>
+    <div class="cat-body">
+      <div class="banner">
+        <div class="bn-top">
+          <div class="bn-em">RK</div>
+          <div><div class="bn-n1">R.K. Agro Industries</div><div class="bn-n2">Nasit &middot; Est.1998 &middot; Gujarat</div></div>
+        </div>
+        <div class="bn-stats">
+          <div class="bst"><div class="bst-n" id="stP">-</div><div class="bst-l">Products</div></div>
+          <div class="bst"><div class="bst-n" id="stC">-</div><div class="bst-l">Categories</div></div>
+          <div class="bst"><div class="bst-n" id="stS">0</div><div class="bst-l">Shared</div></div>
+        </div>
+        <div class="bn-ct">&#128222; 99240 14448 &nbsp;&middot;&nbsp; rkagro459@gmail.com</div>
+      </div>
+      <div class="db-pill load" id="dbPill"><div class="db-dot"></div><span id="dbMsg">Connecting...</span></div>
+      <div class="srch">
+        <svg width="14" height="14" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="srchBox" placeholder="Search products..." oninput="render()"/>
+      </div>
+      <div class="ftabs">
+        <div class="ftab on" data-f="All" onclick="setF(this)">All</div>
+        <div class="ftab" data-f="Sickle" onclick="setF(this)">Sickle</div>
+        <div class="ftab" data-f="Darati" onclick="setF(this)">Darati</div>
+        <div class="ftab" data-f="Farming Tool" onclick="setF(this)">Farming Tool</div>
+        <div class="ftab" data-f="Other" onclick="setF(this)">Other</div>
+      </div>
+      <div class="sumrow"><div class="sumtxt" id="sumT"><b>0</b> products</div></div>
+      <button class="add-btn" onclick="openAdd()">
+        <svg width="15" height="15" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add New Product
+      </button>
+      <div class="grid" id="grid"><div class="empty"><div class="ei">&#128260;</div><p>Loading from database...</p></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="ov" id="ov" onclick="closeAll()"></div>
+
+<div class="sheet" id="editSh">
+  <div class="sh-bar"></div>
+  <div class="sh-body">
+    <div class="sh-title" id="shT">Add Product</div>
+    <div class="setup-warn" id="setupWarn">
+      &#9888; Cloudinary setup nahi hai — images save nahi hongi.<br>
+      Sirf product data save hoga. Images ke liye cloudinary.com setup karo.
+    </div>
+    <div class="ff"><label>Model No.</label><input type="text" id="fMod" placeholder="e.g. P03 Black"/></div>
+    <div class="ff"><label>Product Name</label><input type="text" id="fNam" placeholder="e.g. Agricultural Sickle"/></div>
+    <div class="ff"><label>Category</label>
+      <select id="fCat"><option value="">Select...</option><option>Sickle</option><option>Darati</option><option>Farming Tool</option><option>Other</option></select>
+    </div>
+    <div class="ff"><label>Blade</label><input type="text" id="fBld" placeholder="e.g. High-Carbon Steel"/></div>
+    <div class="ff"><label>Handle</label><input type="text" id="fHnd" placeholder="e.g. Rubber Grip"/></div>
+    <div class="ff"><label>Size / Weight</label><input type="text" id="fDim" placeholder="e.g. 14 inch, 250g"/></div>
+    <div class="ff"><label>Description</label><textarea id="fDes" placeholder="Details..."></textarea></div>
+    <div class="ff">
+      <label>Product Images (Original Quality)</label>
+      <div class="img-row" id="imgRow"></div>
+      <input type="file" id="imgFile" accept="image/*" multiple style="display:none" onchange="onImgs(event)"/>
+      <div class="upload-progress" id="upProg">
+        <div class="up-txt" id="upTxt">Uploading to Cloudinary...</div>
+        <div class="up-bg"><div class="up-fill" id="upFill"></div></div>
+      </div>
+    </div>
+    <div class="f-acts">
+      <button class="f-cancel" onclick="closeAll()">Cancel</button>
+      <button class="f-save" id="fSave" onclick="saveP()">Save Product</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="shareSh">
+  <div class="sh-bar"></div>
+  <div class="sh-body">
+    <div class="sh-hd" id="shHd">Share</div>
+    <div class="sh-sd" id="shSd">Send to customer</div>
+    <div class="pdf-box">
+      <div class="pdf-ic">PDF</div>
+      <div><div class="pdf-nm" id="pdfNm">Product.pdf</div><div class="pdf-sz">R.K. Agro Industries</div></div>
+    </div>
+    <div class="sh-opts">
+      <div class="sopt wa" onclick="doWA()">
+        <svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#25D366"/><path d="M22.5 9.5C20.8 7.8 18.5 6.9 16 6.9c-5.1 0-9.2 4.1-9.2 9.2 0 1.6.4 3.2 1.2 4.6L6.8 25.1l4.5-1.2c1.3.7 2.8 1.1 4.3 1.1h.004c5.1 0 9.2-4.1 9.2-9.2 0-2.5-.97-4.8-2.7-6.3zM16 23.6c-1.4 0-2.7-.4-3.9-1l-.3-.2-2.7.7.7-2.6-.2-.3c-.7-1.2-1.1-2.5-1.1-3.9 0-4.1 3.3-7.4 7.4-7.4 2 0 3.8.8 5.2 2.2 1.4 1.4 2.2 3.2 2.2 5.2 0 4.1-3.3 7.3-7.3 7.3zm4-5.5c-.2-.1-1.3-.6-1.5-.7s-.3-.1-.5.1-.5.7-.6.8-.2.2-.4.1c-1.6-.8-2.7-1.8-3.5-3.1-.3-.4.3-.4.7-1.4.1-.2 0-.3-.1-.4s-.5-1.2-.7-1.6c-.2-.4-.3-.3-.5-.3h-.4c-.1 0-.4.1-.6.3-.2.2-.8.8-.8 1.9s.8 2.2.9 2.4c.1.1 1.6 2.5 4 3.5.6.2 1 .4 1.3.5.6.2 1.1.2 1.5.1.5-.1 1.4-.6 1.6-1.1.2-.5.2-.9.2-1 0-.1-.2-.2-.4-.3z" fill="#fff"/></svg>
+        <div><div class="so-l">WhatsApp</div><div class="so-s">Share PDF</div></div>
+      </div>
+      <div class="sopt" onclick="doCopy()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#1565C0" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        <div><div class="so-l">Copy Info</div><div class="so-s">Clipboard</div></div>
+      </div>
+      <div class="sopt" onclick="doEmail()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#E53935" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg>
+        <div><div class="so-l">Email</div><div class="so-s">Send mail</div></div>
+      </div>
+      <div class="sopt" onclick="doDownload()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#c8860a" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <div><div class="so-l">Download</div><div class="so-s">Save PDF</div></div>
+      </div>
+    </div>
+    <button class="sh-cls" onclick="closeAll()">Cancel</button>
+  </div>
+</div>
+
+<div class="sheet" id="confSh">
+  <div class="sh-bar"></div>
+  <div class="sh-body">
+    <div class="cf-ic">&#128465;&#65039;</div>
+    <div class="cf-t">Delete Product?</div>
+    <div class="cf-s">Database se permanently delete hoga.</div>
+    <div class="cf-acts">
+      <button class="cf-no" onclick="closeAll()">Cancel</button>
+      <button class="cf-yes" onclick="doDel()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var ADMIN_EMAIL = "admin@nasit.com";
+var ADMIN_PASS  = "nasit@123";
+var COL = "products";
+var prods = [], shareCount = 0, filt = "All";
+var editId = null, delId = null, shareId = null;
+var pendingFiles = [];
+var existingUrls = [];
+
+// ── SPLASH: 2 second fixed, NO network wait ──
+var spPct = 0, spDone = false;
+var spFill = document.getElementById("spFill");
+var spTxt  = document.getElementById("spTxt");
+
+function hideSplash(){
+  if(spDone) return; spDone = true;
+  spFill.style.width = "100%";
+  setTimeout(function(){
+    var sp = document.getElementById("splash");
+    sp.style.opacity = "0";
+    setTimeout(function(){
+      sp.style.display = "none";
+      document.getElementById("app").style.display = "block";
+    }, 400);
+  }, 150);
+}
+
+// Animate bar quickly - 2 seconds total
+var spMsgs = ["Loading...","Starting...","Almost done...","Ready!"];
+var spStep = 0;
+var spIv = setInterval(function(){
+  spPct += 5;
+  if(spPct > 100) spPct = 100;
+  spFill.style.width = spPct + "%";
+  if(spPct >= 25 && spStep===0){ spTxt.textContent=spMsgs[1]; spStep=1; }
+  if(spPct >= 60 && spStep===1){ spTxt.textContent=spMsgs[2]; spStep=2; }
+  if(spPct >= 90 && spStep===2){ spTxt.textContent=spMsgs[3]; spStep=3; }
+  if(spPct >= 100){ clearInterval(spIv); }
+}, 40); // 40ms x 20steps = 800ms bar fills, then:
+
+// Show app after exactly 1.5 seconds - guaranteed
+setTimeout(function(){ hideSplash(); }, 1500);
+
+// ── AUTH: check AFTER app shown ──
+auth.onAuthStateChanged(function(user){
+  if(user && user.email===ADMIN_EMAIL){
+    // Already logged in - go straight to catalog
+    hideSplash();
+    showCat();
+  } else {
+    // Not logged in - show login
+    hideSplash();
+  }
+});
+document.getElementById("pw").addEventListener("keydown",function(e){ if(e.key==="Enter") doLogin(); });
+function doLogin(){
+  var em=document.getElementById("em").value.trim();
+  var pw=document.getElementById("pw").value;
+  document.getElementById("lerr").style.display="none";
+  var btn=document.getElementById("lgBtn"); btn.textContent="Signing in..."; btn.disabled=true;
+  auth.signInWithEmailAndPassword(em,pw)
+    .then(function(){ btn.textContent="Sign In"; btn.disabled=false; })
+    .catch(function(e){
+      if(e.code==="auth/user-not-found"||e.code==="auth/invalid-credential"||e.code==="auth/invalid-login-credentials"){
+        auth.createUserWithEmailAndPassword(em,pw)
+          .then(function(){ btn.textContent="Sign In"; btn.disabled=false; })
+          .catch(function(){ showLgErr(btn); });
+      } else { showLgErr(btn); }
+    });
+}
+function showLgErr(btn){ document.getElementById("lerr").style.display="block"; btn.textContent="Sign In"; btn.disabled=false; }
+function doLogout(){
+  if(window._unsub) window._unsub();
+  auth.signOut().then(function(){
+    prods=[];
+    document.getElementById("catPage").classList.remove("show");
+    document.getElementById("lgPage").classList.add("show");
+    document.getElementById("em").value=""; document.getElementById("pw").value="";
+  });
+}
+function showCat(){
+  document.getElementById("lgPage").classList.remove("show");
+  document.getElementById("catPage").classList.add("show");
+  loadProds();
+}
+
+// ── DB STATUS ──
+function setDb(t,m){ var p=document.getElementById("dbPill"); p.className="db-pill "+t; document.getElementById("dbMsg").textContent=m; }
+
+// ── FIRESTORE REALTIME ──
+function loadProds(){
+  setDb("load","Connecting...");
+  if(window._unsub) window._unsub();
+  window._unsub = db.collection(COL).orderBy("createdAt","asc")
+    .onSnapshot(function(snap){
+      prods=[];
+      snap.forEach(function(doc){ var d=doc.data(); d.id=doc.id; prods.push(d); });
+      if(prods.length===0) seedDefaults();
+      else { render(); stats(); setDb("ok","Live database · "+prods.length+" products"); }
+    }, function(err){ setDb("err","Error: "+err.message); });
+}
+function seedDefaults(){
+  var items=[
+    {model:"P01 BLACK",name:"Agricultural Sickle",category:"Sickle",blade:"High-Carbon Steel, Serrated",handle:"Rubber Polymer, Diamond Grip",dims:"14 inch, 250g",desc:"For precise agricultural tasks.",images:[]},
+    {model:"P03 Black",name:"Ergo Sickle",category:"Sickle",blade:"Premium Alloy Steel, Serrated",handle:"Ergo-Grip Polymer",dims:"12 inch, 125g",desc:"Lightweight ergo design.",images:[]},
+    {model:"AP Model SS",name:"Stainless Darati",category:"Darati",blade:"Stainless Steel, Hardened",handle:"Green Ergonomic Grip",dims:"14 inch, 300g",desc:"Professional grade. Made in India.",images:[]},
+    {model:"P05 New",name:"Heavy Duty Sickle",category:"Sickle",blade:"Carbon Steel, Black Oxide",handle:"Blue/Yellow PP Handle",dims:"18 inch, 380g",desc:"For heavy-duty cutting.",images:[]}
+  ];
+  var batch=db.batch();
+  items.forEach(function(p){ p.createdAt=firebase.firestore.FieldValue.serverTimestamp(); batch.set(db.collection(COL).doc(),p); });
+  batch.commit();
+}
+
+// ── FILTER + RENDER ──
+function setF(el){ filt=el.dataset.f; document.querySelectorAll(".ftab").forEach(function(t){ t.classList.toggle("on",t===el); }); render(); }
+function render(){
+  var q=(document.getElementById("srchBox").value||"").toLowerCase();
+  var grid=document.getElementById("grid");
+  var f=prods.filter(function(p){ return (p.name||"").toLowerCase().includes(q)||(p.model||"").toLowerCase().includes(q)||(p.category||"").toLowerCase().includes(q); });
+  if(filt!=="All") f=f.filter(function(p){ return p.category===filt; });
+  var n=f.length;
+  document.getElementById("sumT").innerHTML="<b>"+n+"</b> product"+(n!==1?"s":"")+(filt!=="All"?" &middot; <span style='color:#c8860a'>"+filt+"</span>":"");
+  if(!f.length){ grid.innerHTML='<div class="empty"><div class="ei">&#127807;</div><p>No products.<br>Tap Add New Product.</p></div>'; return; }
+  grid.innerHTML=f.map(function(p){
+    var im=p.images||[];
+    var ih="";
+    if(!im.length) ih='<div class="cph">&#127807;</div>';
+    else{ ih=im.slice(0,2).map(function(url){ return '<img class="cimg" src="'+url+'" loading="lazy"/>'; }).join(""); if(im.length>2) ih+='<div class="cmore">+'+(im.length-2)+"</div>"; }
+    return '<div class="card">'+
+      '<div class="card-imgs">'+ih+'</div>'+
+      '<div class="card-body">'+
+        '<div class="c-model">'+(p.model||"")+" &middot; "+(p.category||"")+"</div>"+
+        '<div class="c-name">'+(p.name||"")+"</div>"+
+        '<div class="c-spec">'+(p.blade?"Blade: "+p.blade+"<br>":"")+(p.handle?"Handle: "+p.handle+"<br>":"")+(p.dims?"Size: "+p.dims:"")+"</div>"+
+        (p.desc?'<div class="c-desc">'+p.desc+"</div>":"")+
+        '<div class="c-acts">'+
+          '<button class="c-edit" onclick="openEdit(''+p.id+'')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>'+
+          '<button class="c-share" onclick="openShare(''+p.id+'')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share</button>'+
+          '<button class="c-del" onclick="askDel(''+p.id+'')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>'+
+        "</div>"+
+      "</div></div>";
+  }).join("");
+}
+function stats(){
+  document.getElementById("stP").textContent=prods.length;
+  var c=new Set(prods.map(function(p){ return p.category; }).filter(Boolean));
+  document.getElementById("stC").textContent=c.size;
+  document.getElementById("stS").textContent=shareCount;
+}
+
+// ── IMAGE HANDLING ──
+function cloudinaryReady(){ return CLOUD_NAME!=="YOUR_CLOUD_NAME" && UPLOAD_PRESET!=="YOUR_UPLOAD_PRESET"; }
+
+function renderImgs(){
+  var row=document.getElementById("imgRow");
+  var h=existingUrls.map(function(url,i){
+    return '<div class="ithumb"><img src="'+url+'"/><button class="rm" onclick="rmExisting('+i+')">x</button></div>';
+  }).join("");
+  pendingFiles.forEach(function(f,i){
+    var localUrl=URL.createObjectURL(f);
+    h+='<div class="ithumb"><img src="'+localUrl+'"/><button class="rm" onclick="rmPending('+i+')">x</button></div>';
+  });
+  var total=existingUrls.length+pendingFiles.length;
+  if(total<4) h+='<label class="iadd" for="imgFile"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>Add</span></label>';
+  row.innerHTML=h;
+  // Show warning if cloudinary not setup
+  document.getElementById("setupWarn").style.display = (!cloudinaryReady() && (total > 0 || pendingFiles.length > 0)) ? "block" : "none";
+}
+function rmExisting(i){ existingUrls.splice(i,1); renderImgs(); }
+function rmPending(i){ pendingFiles.splice(i,1); renderImgs(); }
+function onImgs(e){
+  Array.from(e.target.files).forEach(function(f){
+    if(existingUrls.length+pendingFiles.length>=4) return;
+    pendingFiles.push(f);
+  });
+  e.target.value=""; renderImgs();
+}
+renderImgs();
+
+// Upload ONE file to Cloudinary — returns Promise<url>
+function uploadToCloudinary(file, idx, total){
+  return new Promise(function(resolve, reject){
+    var formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", UPLOAD_PRESET);
+    formData.append("folder", "rk-agro");
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "https://api.cloudinary.com/v1_1/"+CLOUD_NAME+"/image/upload");
+
+    xhr.upload.onprogress = function(e){
+      if(e.lengthComputable){
+        var pct = Math.round((e.loaded/e.total)*100);
+        document.getElementById("upFill").style.width = pct+"%";
+        document.getElementById("upTxt").textContent = "Uploading image "+(idx+1)+"/"+total+" ("+pct+"%)...";
+      }
+    };
+    xhr.onload = function(){
+      if(xhr.status===200){
+        var res = JSON.parse(xhr.responseText);
+        resolve(res.secure_url); // permanent HTTPS URL
+      } else {
+        reject(new Error("Upload failed: "+xhr.status));
+      }
+    };
+    xhr.onerror = function(){ reject(new Error("Network error")); };
+    xhr.send(formData);
+  });
+}
+
+// Upload all pending files one by one
+async function uploadAllFiles(){
+  if(pendingFiles.length===0) return existingUrls.slice();
+  document.getElementById("upProg").style.display="block";
+  var urls = existingUrls.slice();
+  for(var i=0; i<pendingFiles.length; i++){
+    var url = await uploadToCloudinary(pendingFiles[i], i, pendingFiles.length);
+    urls.push(url);
+  }
+  document.getElementById("upProg").style.display="none";
+  return urls;
+}
+
+// ── ADD / EDIT ──
+function openAdd(){
+  editId=null; pendingFiles=[]; existingUrls=[];
+  document.getElementById("shT").textContent="Add Product";
+  ["fMod","fNam","fBld","fHnd","fDim","fDes"].forEach(function(id){ document.getElementById(id).value=""; });
+  document.getElementById("fCat").value="";
+  document.getElementById("upProg").style.display="none";
+  document.getElementById("setupWarn").style.display="none";
+  renderImgs(); openSh("editSh");
+}
+function openEdit(id){
+  var p=prods.find(function(x){ return x.id===id; }); if(!p) return;
+  editId=id; pendingFiles=[]; existingUrls=p.images?p.images.slice():[];
+  document.getElementById("shT").textContent="Edit Product";
+  document.getElementById("fMod").value=p.model||"";
+  document.getElementById("fNam").value=p.name||"";
+  document.getElementById("fCat").value=p.category||"";
+  document.getElementById("fBld").value=p.blade||"";
+  document.getElementById("fHnd").value=p.handle||"";
+  document.getElementById("fDim").value=p.dims||"";
+  document.getElementById("fDes").value=p.desc||"";
+  document.getElementById("upProg").style.display="none";
+  document.getElementById("setupWarn").style.display="none";
+  renderImgs(); openSh("editSh");
+}
+
+async function saveP(){
+  var mod=document.getElementById("fMod").value.trim();
+  var nam=document.getElementById("fNam").value.trim();
+  if(!mod||!nam){ toast("Model aur naam zaroori hai"); return; }
+  var btn=document.getElementById("fSave"); btn.textContent="Saving..."; btn.disabled=true;
+  try{
+    var imgUrls=[];
+    if(pendingFiles.length>0){
+      if(!cloudinaryReady()){
+        // No cloudinary — save without images, warn user
+        toast("Images skip — Cloudinary setup karo pehle");
+        imgUrls = existingUrls.slice();
+      } else {
+        imgUrls = await uploadAllFiles();
+      }
+    } else {
+      imgUrls = existingUrls.slice();
+    }
+    var data={
+      model:mod, name:nam,
+      category:document.getElementById("fCat").value,
+      blade:document.getElementById("fBld").value.trim(),
+      handle:document.getElementById("fHnd").value.trim(),
+      dims:document.getElementById("fDim").value.trim(),
+      desc:document.getElementById("fDes").value.trim(),
+      images:imgUrls
+    };
+    if(editId){
+      await db.collection(COL).doc(editId).update(data);
+      toast("Product update ho gaya!");
+    } else {
+      data.createdAt=firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection(COL).add(data);
+      toast("Product add ho gaya!");
+    }
+    pendingFiles=[]; existingUrls=[];
+    closeAll(); btn.textContent="Save Product"; btn.disabled=false;
+  } catch(e){
+    btn.textContent="Save Product"; btn.disabled=false;
+    toast("Error: "+e.message);
+  }
+}
+
+// ── DELETE ──
+function askDel(id){ delId=id; openSh("confSh"); }
+function doDel(){
+  db.collection(COL).doc(delId).delete()
+    .then(function(){ closeAll(); toast("Product delete ho gaya!"); })
+    .catch(function(e){ closeAll(); toast("Error: "+e.message); });
+}
+
+// ── PDF ──
+function makePDF(p){
+  var doc=new window.jspdf.jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+  var W=210,M=18;
+  doc.setFillColor(26,61,31); doc.rect(0,0,W,46,"F");
+  doc.setFillColor(200,134,10); doc.roundedRect(M,8,22,22,3,3,"F");
+  doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont("helvetica","bold");
+  doc.text("RK",M+11,22,{align:"center"});
+  doc.setFontSize(17); doc.text("R.K. Agro Industries",M+28,17);
+  doc.setFontSize(9); doc.setFont("helvetica","normal");
+  doc.text("Professional Agricultural Tools - Est. 1998",M+28,24);
+  doc.text("Nasit Agro Products - Made in India",M+28,30);
+  doc.setFontSize(7.5); doc.setTextColor(190,200,190);
+  doc.text("rkagro459@gmail.com | agro-sickles.blogspot.com",M+28,37);
+  doc.setFillColor(200,134,10); doc.rect(0,46,W,1.2,"F");
+  var y=58;
+  doc.setFillColor(245,242,237); doc.roundedRect(M,y-5,W-2*M,9,2,2,"F");
+  doc.setFontSize(11); doc.setFont("helvetica","bold"); doc.setTextColor(26,61,31);
+  doc.text("PRODUCT SPECIFICATION SHEET",W/2,y,{align:"center"}); y+=12;
+  doc.setFillColor(26,61,31); doc.rect(M,y,W-2*M,9,"F");
+  doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont("helvetica","bold");
+  doc.text((p.name||"").toUpperCase(),W/2,y+6.2,{align:"center"}); y+=13;
+  var rows=[["Model",p.model||"-"],["Category",p.category||"-"],["Blade",p.blade||"-"],["Handle",p.handle||"-"],["Size",p.dims||"-"],["Description",p.desc||"-"]];
+  var cw=W-2*M;
+  rows.forEach(function(r,i){
+    doc.setFillColor(i%2===0?250:255,i%2===0?248:255,i%2===0?244:255);
+    doc.rect(M,y,cw,11,"F"); doc.setDrawColor(225,218,205); doc.setLineWidth(0.3); doc.rect(M,y,cw,11,"S");
+    doc.setFontSize(8); doc.setFont("helvetica","bold"); doc.setTextColor(160,120,50); doc.text(r[0].toUpperCase(),M+4,y+7);
+    doc.setFont("helvetica","normal"); doc.setTextColor(40,40,40);
+    doc.text(doc.splitTextToSize(r[1],cw-56)[0],M+54,y+7); y+=11;
+  });
+  y+=8; doc.setFillColor(200,134,10); doc.rect(M,y,W-2*M,0.8,"F"); y+=6;
+  doc.setFontSize(8); doc.setFont("helvetica","bold"); doc.setTextColor(26,61,31); doc.text("NASIT AGRO PRODUCTS",M,y);
+  doc.setFont("helvetica","normal"); doc.setTextColor(130,130,130);
+  y+=5; doc.text("Sopan Ind. Area, Plot No.16, Shapar (Veraval)-360024, Dist. Rajkot, Gujarat.",M,y);
+  y+=4; doc.text("GSTIN: 24AEZPN5075R1ZB | Phone: 99240 14448 / 99253 61062",M,y);
+  doc.setFillColor(26,61,31); doc.rect(0,283,W,14,"F");
+  doc.setTextColor(180,200,180); doc.setFontSize(7); doc.setFont("helvetica","normal");
+  doc.text("www.nasit-agri.com | agro-sickles.blogspot.com | Since 1998",W/2,291,{align:"center"});
+  return doc;
+}
+
+// ── SHARE ──
+function openShare(id){
+  var p=prods.find(function(x){ return x.id===id; }); if(!p) return;
+  shareId=id;
+  document.getElementById("shHd").textContent=p.name;
+  document.getElementById("shSd").textContent="Model: "+p.model+" | "+p.category;
+  document.getElementById("pdfNm").textContent="RK_"+p.model.replace(/\s+/g,"_")+".pdf";
+  openSh("shareSh");
+}
+function waMsg(p){
+  var imgTxt=(p.images&&p.images.length>0)?"
+
+Images: "+p.images.slice(0,1).join(""):"";
+  return "*R.K. Agro Industries*
+
+*Product:* "+p.name+"
+*Model:* "+p.model+"
+*Category:* "+p.category+"
+
+*Blade:* "+p.blade+"
+*Handle:* "+p.handle+"
+*Size:* "+p.dims+"
+
+"+p.desc+imgTxt+"
+
+Phone: 99240 14448
+Email: rkagro459@gmail.com";
+}
+function doWA(){
+  var p=prods.find(function(x){ return x.id===shareId; }); if(!p) return;
+  closeAll(); toast("PDF ban raha hai...");
+  var fname="RK_"+p.model.replace(/\s+/g,"_")+".pdf";
+  var msg=waMsg(p);
+  setTimeout(function(){
+    try{
+      var doc=makePDF(p); var blob=doc.output("blob");
+      var file=new File([blob],fname,{type:"application/pdf"});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        navigator.share({title:"R.K. Agro - "+p.name,text:msg,files:[file]})
+          .then(function(){ shareCount++; stats(); toast("Share ho gaya!"); })
+          .catch(function(e){ if(e.name!=="AbortError"){ doc.save(fname); setTimeout(function(){window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");},700); shareCount++; stats(); toast("PDF save hua! WhatsApp mein attach karo"); }});
+      } else {
+        doc.save(fname);
+        setTimeout(function(){window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");},700);
+        shareCount++; stats(); toast("PDF save hua! WhatsApp mein attach karo");
+      }
+    }catch(e){ window.open("https://wa.me/?text="+encodeURIComponent(waMsg(p)),"_blank"); toast("WhatsApp khul raha hai..."); }
+  },400);
+}
+function doCopy(){
+  var p=prods.find(function(x){ return x.id===shareId; }); if(!p) return;
+  if(navigator.clipboard) navigator.clipboard.writeText(waMsg(p)).catch(function(){});
+  closeAll(); toast("Copy ho gaya!");
+}
+function doEmail(){
+  var p=prods.find(function(x){ return x.id===shareId; }); if(!p) return;
+  closeAll();
+  try{ makePDF(p).save("RK_"+p.model.replace(/\s+/g,"_")+".pdf"); }catch(e){}
+  var s=encodeURIComponent("R.K. Agro - "+p.name);
+  var b=encodeURIComponent("Dear Customer,\n\nProduct: "+p.name+"\nModel: "+p.model+"\nBlade: "+p.blade+"\nHandle: "+p.handle+"\nSize: "+p.dims+"\n\n"+p.desc+"\n\nR.K. Agro Industries\n99240 14448 | rkagro459@gmail.com");
+  setTimeout(function(){ window.open("mailto:?subject="+s+"&body="+b,"_blank"); },300);
+  toast("Email khul raha hai...");
+}
+function doDownload(){
+  var p=prods.find(function(x){ return x.id===shareId; }); if(!p) return;
+  closeAll();
+  setTimeout(function(){ try{ makePDF(p).save("RK_"+p.model.replace(/\s+/g,"_")+".pdf"); toast("PDF download ho gaya!"); }catch(e){ toast("Error"); } },300);
+}
+
+function openSh(id){ document.getElementById("ov").classList.add("show"); document.getElementById(id).classList.add("show"); }
+function closeAll(){ document.getElementById("ov").classList.remove("show"); ["editSh","shareSh","confSh"].forEach(function(id){ document.getElementById(id).classList.remove("show"); }); }
+var tTmr;
+function toast(msg){ var t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(tTmr); tTmr=setTimeout(function(){ t.classList.remove("show"); },3500); }
+if("serviceWorker" in navigator) window.addEventListener("load",function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+</script>
+</body>
+</html>
