@@ -604,45 +604,96 @@ function makePDF(p){
   return new Promise(function(resolve){
     var doc=new window.jspdf.jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
     var W=210,M=18;
-    doc.setFillColor(26,61,31); doc.rect(0,0,W,46,"F");
-    doc.setFillColor(200,134,10); doc.roundedRect(M,8,22,22,3,3,"F");
-    doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont("helvetica","bold");
-    doc.text("RK",M+11,22,{align:"center"});
-    doc.setFontSize(17); doc.text("R.K. Agro Industries",W/2,17,{align:"center"});
-    doc.setFontSize(9); doc.setFont("helvetica","normal");
-    doc.text("Professional Agricultural Tools - Est. 1998",W/2,24,{align:"center"});
-    doc.text("Nasit Agro Products - Made in India",W/2,30,{align:"center"});
-    doc.setFontSize(7.5); doc.setTextColor(190,200,190);
-    doc.text("rkagro459@gmail.com | agro-sickles.blogspot.com",W/2,37,{align:"center"});
-    doc.setFillColor(200,134,10); doc.rect(0,46,W,1.2,"F");
-    var y=58;
-    doc.setFillColor(245,242,237); doc.roundedRect(M,y-5,W-2*M,9,2,2,"F");
+    var pageNum=1;
+    
+    function addHeader(){
+      doc.setFillColor(26,61,31); doc.rect(0,0,W,46,"F");
+      doc.setFillColor(200,134,10); doc.roundedRect(M,8,22,22,3,3,"F");
+      doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont("helvetica","bold");
+      doc.text("RK",M+11,22,{align:"center"});
+      doc.setFontSize(17); doc.text("R.K. Agro Industries",W/2,17,{align:"center"});
+      doc.setFontSize(9); doc.setFont("helvetica","normal");
+      doc.text("Professional Agricultural Tools - Est. 1998",W/2,24,{align:"center"});
+      doc.text("Nasit Agro Products - Made in India",W/2,30,{align:"center"});
+      doc.setFontSize(7.5); doc.setTextColor(190,200,190);
+      doc.text("rkagro459@gmail.com | agro-sickles.blogspot.com",W/2,37,{align:"center"});
+      doc.setFillColor(200,134,10); doc.rect(0,46,W,1.2,"F");
+      return 48;
+    }
+    
+    var y=addHeader();
+    doc.setFillColor(245,242,237); doc.roundedRect(M,y+10,W-2*M,9,2,2,"F");
+    y+=10;
     doc.setFontSize(11); doc.setFont("helvetica","bold"); doc.setTextColor(26,61,31);
-    doc.text("PRODUCT SPECIFICATION SHEET",W/2,y,{align:"center"}); y+=12;
+    doc.text("PRODUCT SPECIFICATION SHEET",W/2,y+6,{align:"center"}); y+=15;
     doc.setFillColor(26,61,31); doc.rect(M,y,W-2*M,9,"F");
     doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont("helvetica","bold");
     doc.text((p.name||"").toUpperCase(),W/2,y+6.2,{align:"center"}); y+=13;
-    if(p.images && p.images.length>0){
+    
+    var images=p.images||[];
+    var imgPerPage=2;
+    var totalPages=Math.ceil(images.length/imgPerPage);
+    var imgsAdded=0;
+    var imgHeight=35;
+    var imgWidth=60;
+    
+    function addImage(imgUrl,callback){
       var img=new Image();
       img.crossOrigin="anonymous";
       img.onload=function(){
-        try{ doc.addImage(img,"JPEG",W/2-30,y,60,40); }catch(e){}
-        addDetails();
+        try{
+          var xPos=W/2-imgWidth/2;
+          if(y+imgHeight>270){
+            doc.addPage();
+            y=addHeader();
+            doc.setFontSize(10); doc.setTextColor(100,100,100);
+            doc.text("(continued)",W/2,y+5,{align:"center"}); y+=10;
+          }
+          doc.addImage(img,"JPEG",xPos,y,imgWidth,imgHeight);
+          y+=imgHeight+8;
+          imgsAdded++;
+          callback();
+        }catch(e){
+          imgsAdded++;
+          callback();
+        }
       };
-      img.onerror=function(){ addDetails(); };
-      img.src=p.images[0];
-    } else addDetails();
+      img.onerror=function(){ imgsAdded++; callback(); };
+      img.src=imgUrl;
+    }
+    
+    function addAllImages(){
+      if(imgsAdded>=images.length){
+        addDetails();
+        return;
+      }
+      addImage(images[imgsAdded],addAllImages);
+    }
+    
     function addDetails(){
-      y+=42;
+      if(y+60>270){
+        doc.addPage();
+        y=addHeader();
+      }
+      y+=5;
       var rows=[["Model",p.model||"-"],["Category",p.category||"-"],["Blade",p.blade||"-"],["Handle",p.handle||"-"],["Size",p.dims||"-"],["Description",p.desc||"-"]];
       var cw=W-2*M;
       rows.forEach(function(r,i){
+        if(y+11>270){
+          doc.addPage();
+          y=addHeader()+10;
+        }
         doc.setFillColor(i%2===0?250:255,i%2===0?248:255,i%2===0?244:255);
         doc.rect(M,y,cw,11,"F"); doc.setDrawColor(225,218,205); doc.setLineWidth(0.3); doc.rect(M,y,cw,11,"S");
         doc.setFontSize(8); doc.setFont("helvetica","bold"); doc.setTextColor(160,120,50); doc.text(r[0].toUpperCase(),M+4,y+7);
         doc.setFont("helvetica","normal"); doc.setTextColor(40,40,40);
         doc.text(doc.splitTextToSize(r[1],cw-56)[0],M+54,y+7); y+=11;
       });
+      
+      if(y+20>270){
+        doc.addPage();
+        y=addHeader()+10;
+      }
       y+=8; doc.setFillColor(200,134,10); doc.rect(M,y,W-2*M,0.8,"F"); y+=6;
       doc.setFontSize(8); doc.setFont("helvetica","bold"); doc.setTextColor(26,61,31); doc.text("NASIT AGRO PRODUCTS",M,y);
       doc.setFont("helvetica","normal"); doc.setTextColor(130,130,130);
@@ -652,6 +703,12 @@ function makePDF(p){
       doc.setTextColor(180,200,180); doc.setFontSize(7); doc.setFont("helvetica","normal");
       doc.text("www.nasit-agri.com | agro-sickles.blogspot.com | Since 1998",W/2,291,{align:"center"});
       resolve(doc);
+    }
+    
+    if(images.length>0){
+      addAllImages();
+    } else {
+      addDetails();
     }
   });
 }
