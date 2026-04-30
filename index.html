@@ -4,10 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#1a3d1f">
+<meta name="application-name" content="RK Agro">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="RK Agro">
-<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="manifest" href="/manifest.json">
 <title>R.K. Agro Industries</title>
 
 <!-- Firebase -->
@@ -457,9 +460,9 @@ function render(){
         '<div class="c-spec">'+(p.blade?"Blade: "+p.blade+"<br>":"")+(p.handle?"Handle: "+p.handle+"<br>":"")+(p.dims?"Size: "+p.dims:"")+"</div>"+
         (p.desc?'<div class="c-desc">'+p.desc+"</div>":"")+
         '<div class="c-acts">'+
-          '<button class="c-edit" onclick="openEdit(''+p.id+'')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>'+
-          '<button class="c-share" onclick="openShare(''+p.id+'')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share</button>'+
-          '<button class="c-del" onclick="askDel(''+p.id+'')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>'+
+          '<button class="c-edit" onclick="openEdit(\''+p.id+'\')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>'+
+          '<button class="c-share" onclick="openShare(\''+p.id+'\')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share</button>'+
+          '<button class="c-del" onclick="askDel(\''+p.id+'\')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>'+
         "</div>"+
       "</div></div>";
   }).join("");
@@ -623,44 +626,58 @@ function doDel(){
 
 // ── PDF ──
 function makePDF(p){
-  var doc=new window.jspdf.jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
-  var W=210,M=18;
-  doc.setFillColor(26,61,31); doc.rect(0,0,W,46,"F");
-  doc.setFillColor(200,134,10); doc.roundedRect(M,8,22,22,3,3,"F");
-  doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont("helvetica","bold");
-  doc.text("RK",M+11,22,{align:"center"});
-  doc.setFontSize(17); doc.text("R.K. Agro Industries",M+28,17);
-  doc.setFontSize(9); doc.setFont("helvetica","normal");
-  doc.text("Professional Agricultural Tools - Est. 1998",M+28,24);
-  doc.text("Nasit Agro Products - Made in India",M+28,30);
-  doc.setFontSize(7.5); doc.setTextColor(190,200,190);
-  doc.text("rkagro459@gmail.com | agro-sickles.blogspot.com",M+28,37);
-  doc.setFillColor(200,134,10); doc.rect(0,46,W,1.2,"F");
-  var y=58;
-  doc.setFillColor(245,242,237); doc.roundedRect(M,y-5,W-2*M,9,2,2,"F");
-  doc.setFontSize(11); doc.setFont("helvetica","bold"); doc.setTextColor(26,61,31);
-  doc.text("PRODUCT SPECIFICATION SHEET",W/2,y,{align:"center"}); y+=12;
-  doc.setFillColor(26,61,31); doc.rect(M,y,W-2*M,9,"F");
-  doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont("helvetica","bold");
-  doc.text((p.name||"").toUpperCase(),W/2,y+6.2,{align:"center"}); y+=13;
-  var rows=[["Model",p.model||"-"],["Category",p.category||"-"],["Blade",p.blade||"-"],["Handle",p.handle||"-"],["Size",p.dims||"-"],["Description",p.desc||"-"]];
-  var cw=W-2*M;
-  rows.forEach(function(r,i){
-    doc.setFillColor(i%2===0?250:255,i%2===0?248:255,i%2===0?244:255);
-    doc.rect(M,y,cw,11,"F"); doc.setDrawColor(225,218,205); doc.setLineWidth(0.3); doc.rect(M,y,cw,11,"S");
-    doc.setFontSize(8); doc.setFont("helvetica","bold"); doc.setTextColor(160,120,50); doc.text(r[0].toUpperCase(),M+4,y+7);
-    doc.setFont("helvetica","normal"); doc.setTextColor(40,40,40);
-    doc.text(doc.splitTextToSize(r[1],cw-56)[0],M+54,y+7); y+=11;
+  return new Promise(function(resolve){
+    var doc=new window.jspdf.jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+    var W=210,M=18;
+    doc.setFillColor(26,61,31); doc.rect(0,0,W,46,"F");
+    doc.setFillColor(200,134,10); doc.roundedRect(M,8,22,22,3,3,"F");
+    doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont("helvetica","bold");
+    doc.text("RK",M+11,22,{align:"center"});
+    doc.setFontSize(17); doc.text("R.K. Agro Industries",M+28,17);
+    doc.setFontSize(9); doc.setFont("helvetica","normal");
+    doc.text("Professional Agricultural Tools - Est. 1998",M+28,24);
+    doc.text("Nasit Agro Products - Made in India",M+28,30);
+    doc.setFontSize(7.5); doc.setTextColor(190,200,190);
+    doc.text("rkagro459@gmail.com | agro-sickles.blogspot.com",M+28,37);
+    doc.setFillColor(200,134,10); doc.rect(0,46,W,1.2,"F");
+    var y=58;
+    doc.setFillColor(245,242,237); doc.roundedRect(M,y-5,W-2*M,9,2,2,"F");
+    doc.setFontSize(11); doc.setFont("helvetica","bold"); doc.setTextColor(26,61,31);
+    doc.text("PRODUCT SPECIFICATION SHEET",W/2,y,{align:"center"}); y+=12;
+    doc.setFillColor(26,61,31); doc.rect(M,y,W-2*M,9,"F");
+    doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont("helvetica","bold");
+    doc.text((p.name||"").toUpperCase(),W/2,y+6.2,{align:"center"}); y+=13;
+    if(p.images && p.images.length>0){
+      var img=new Image();
+      img.crossOrigin="anonymous";
+      img.onload=function(){
+        try{ doc.addImage(img,"JPEG",W-78,55,60,40); }catch(e){}
+        addDetails();
+      };
+      img.onerror=function(){ addDetails(); };
+      img.src=p.images[0];
+    } else addDetails();
+    function addDetails(){
+      var rows=[["Model",p.model||"-"],["Category",p.category||"-"],["Blade",p.blade||"-"],["Handle",p.handle||"-"],["Size",p.dims||"-"],["Description",p.desc||"-"]];
+      var cw=W-2*M;
+      rows.forEach(function(r,i){
+        doc.setFillColor(i%2===0?250:255,i%2===0?248:255,i%2===0?244:255);
+        doc.rect(M,y,cw,11,"F"); doc.setDrawColor(225,218,205); doc.setLineWidth(0.3); doc.rect(M,y,cw,11,"S");
+        doc.setFontSize(8); doc.setFont("helvetica","bold"); doc.setTextColor(160,120,50); doc.text(r[0].toUpperCase(),M+4,y+7);
+        doc.setFont("helvetica","normal"); doc.setTextColor(40,40,40);
+        doc.text(doc.splitTextToSize(r[1],cw-56)[0],M+54,y+7); y+=11;
+      });
+      y+=8; doc.setFillColor(200,134,10); doc.rect(M,y,W-2*M,0.8,"F"); y+=6;
+      doc.setFontSize(8); doc.setFont("helvetica","bold"); doc.setTextColor(26,61,31); doc.text("NASIT AGRO PRODUCTS",M,y);
+      doc.setFont("helvetica","normal"); doc.setTextColor(130,130,130);
+      y+=5; doc.text("Sopan Ind. Area, Plot No.16, Shapar (Veraval)-360024, Dist. Rajkot, Gujarat.",M,y);
+      y+=4; doc.text("GSTIN: 24AEZPN5075R1ZB | Phone: 99240 14448 / 99253 61062",M,y);
+      doc.setFillColor(26,61,31); doc.rect(0,283,W,14,"F");
+      doc.setTextColor(180,200,180); doc.setFontSize(7); doc.setFont("helvetica","normal");
+      doc.text("www.nasit-agri.com | agro-sickles.blogspot.com | Since 1998",W/2,291,{align:"center"});
+      resolve(doc);
+    }
   });
-  y+=8; doc.setFillColor(200,134,10); doc.rect(M,y,W-2*M,0.8,"F"); y+=6;
-  doc.setFontSize(8); doc.setFont("helvetica","bold"); doc.setTextColor(26,61,31); doc.text("NASIT AGRO PRODUCTS",M,y);
-  doc.setFont("helvetica","normal"); doc.setTextColor(130,130,130);
-  y+=5; doc.text("Sopan Ind. Area, Plot No.16, Shapar (Veraval)-360024, Dist. Rajkot, Gujarat.",M,y);
-  y+=4; doc.text("GSTIN: 24AEZPN5075R1ZB | Phone: 99240 14448 / 99253 61062",M,y);
-  doc.setFillColor(26,61,31); doc.rect(0,283,W,14,"F");
-  doc.setTextColor(180,200,180); doc.setFontSize(7); doc.setFont("helvetica","normal");
-  doc.text("www.nasit-agri.com | agro-sickles.blogspot.com | Since 1998",W/2,291,{align:"center"});
-  return doc;
 }
 
 // ── SHARE ──
@@ -673,23 +690,20 @@ function openShare(id){
   openSh("shareSh");
 }
 function waMsg(p){
-  var imgTxt=(p.images&&p.images.length>0)?"
+  return `*R.K. Agro Industries*
 
-Images: "+p.images.slice(0,1).join(""):"";
-  return "*R.K. Agro Industries*
+*Product:* ${p.name}
+*Model:* ${p.model}
+*Category:* ${p.category}
 
-*Product:* "+p.name+"
-*Model:* "+p.model+"
-*Category:* "+p.category+"
+*Blade:* ${p.blade}
+*Handle:* ${p.handle}
+*Size:* ${p.dims}
 
-*Blade:* "+p.blade+"
-*Handle:* "+p.handle+"
-*Size:* "+p.dims+"
-
-"+p.desc+imgTxt+"
+${p.desc}
 
 Phone: 99240 14448
-Email: rkagro459@gmail.com";
+Email: rkagro459@gmail.com`;
 }
 function doWA(){
   var p=prods.find(function(x){ return x.id===shareId; }); if(!p) return;
@@ -697,19 +711,30 @@ function doWA(){
   var fname="RK_"+p.model.replace(/\s+/g,"_")+".pdf";
   var msg=waMsg(p);
   setTimeout(function(){
-    try{
-      var doc=makePDF(p); var blob=doc.output("blob");
-      var file=new File([blob],fname,{type:"application/pdf"});
-      if(navigator.canShare&&navigator.canShare({files:[file]})){
-        navigator.share({title:"R.K. Agro - "+p.name,text:msg,files:[file]})
-          .then(function(){ shareCount++; stats(); toast("Share ho gaya!"); })
-          .catch(function(e){ if(e.name!=="AbortError"){ doc.save(fname); setTimeout(function(){window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");},700); shareCount++; stats(); toast("PDF save hua! WhatsApp mein attach karo"); }});
-      } else {
-        doc.save(fname);
-        setTimeout(function(){window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");},700);
-        shareCount++; stats(); toast("PDF save hua! WhatsApp mein attach karo");
-      }
-    }catch(e){ window.open("https://wa.me/?text="+encodeURIComponent(waMsg(p)),"_blank"); toast("WhatsApp khul raha hai..."); }
+    makePDF(p)
+      .then(function(doc){
+        try{
+          var blob=doc.output("blob");
+          var file=new File([blob],fname,{type:"application/pdf"});
+          if(navigator.canShare&&navigator.canShare({files:[file]})){
+            navigator.share({title:"R.K. Agro - "+p.name,text:msg,files:[file]})
+              .then(function(){ shareCount++; stats(); toast("Share ho gaya!"); })
+              .catch(function(e){ if(e.name!=="AbortError"){ doc.save(fname); setTimeout(function(){window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");},700); shareCount++; stats(); toast("PDF save hua! WhatsApp mein attach karo"); }});
+          } else {
+            doc.save(fname);
+            setTimeout(function(){window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");},700);
+            shareCount++; stats(); toast("PDF save hua! WhatsApp mein attach karo");
+          }
+        } catch(e){
+          doc.save(fname);
+          setTimeout(function(){window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");},700);
+          shareCount++; stats(); toast("PDF save hua! WhatsApp mein attach karo");
+        }
+      })
+      .catch(function(){
+        window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");
+        toast("WhatsApp khul raha hai...");
+      });
   },400);
 }
 function doCopy(){
@@ -720,7 +745,9 @@ function doCopy(){
 function doEmail(){
   var p=prods.find(function(x){ return x.id===shareId; }); if(!p) return;
   closeAll();
-  try{ makePDF(p).save("RK_"+p.model.replace(/\s+/g,"_")+".pdf"); }catch(e){}
+  makePDF(p).then(function(doc){
+    try{ doc.save("RK_"+p.model.replace(/\s+/g,"_")+".pdf"); }catch(e){}
+  });
   var s=encodeURIComponent("R.K. Agro - "+p.name);
   var b=encodeURIComponent("Dear Customer,\n\nProduct: "+p.name+"\nModel: "+p.model+"\nBlade: "+p.blade+"\nHandle: "+p.handle+"\nSize: "+p.dims+"\n\n"+p.desc+"\n\nR.K. Agro Industries\n99240 14448 | rkagro459@gmail.com");
   setTimeout(function(){ window.open("mailto:?subject="+s+"&body="+b,"_blank"); },300);
@@ -729,14 +756,14 @@ function doEmail(){
 function doDownload(){
   var p=prods.find(function(x){ return x.id===shareId; }); if(!p) return;
   closeAll();
-  setTimeout(function(){ try{ makePDF(p).save("RK_"+p.model.replace(/\s+/g,"_")+".pdf"); toast("PDF download ho gaya!"); }catch(e){ toast("Error"); } },300);
+  setTimeout(function(){ makePDF(p).then(function(doc){ try{ doc.save("RK_"+p.model.replace(/\s+/g,"_")+".pdf"); toast("PDF download ho gaya!"); }catch(e){ toast("Error"); } }); },300);
 }
 
 function openSh(id){ document.getElementById("ov").classList.add("show"); document.getElementById(id).classList.add("show"); }
 function closeAll(){ document.getElementById("ov").classList.remove("show"); ["editSh","shareSh","confSh"].forEach(function(id){ document.getElementById(id).classList.remove("show"); }); }
 var tTmr;
 function toast(msg){ var t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(tTmr); tTmr=setTimeout(function(){ t.classList.remove("show"); },3500); }
-if("serviceWorker" in navigator) window.addEventListener("load",function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+if("serviceWorker" in navigator) window.addEventListener("load",function(){ navigator.serviceWorker.register("/sw.js").catch(function(){}); });
 </script>
 </body>
 </html>
