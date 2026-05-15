@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAdmin } from '@/lib/auth'
-import { createHmac } from 'crypto'
+import { createHash } from 'crypto'
 
 export async function POST(req: NextRequest) {
   const admin = await verifyAdmin(req)
@@ -11,20 +11,13 @@ export async function POST(req: NextRequest) {
     const file = formData.get('file') as File
     if (!file) return NextResponse.json({ error: 'No file' }, { status: 400 })
 
-    const cloudName  = process.env.CLOUDINARY_CLOUD_NAME!
-    const apiKey     = process.env.CLOUDINARY_API_KEY!
-    const apiSecret  = process.env.CLOUDINARY_API_SECRET!
-    const timestamp  = Math.floor(Date.now() / 1000)
-    const folder     = 'rk-agro'
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME!
+    const apiKey    = process.env.CLOUDINARY_API_KEY!
+    const apiSecret = process.env.CLOUDINARY_API_SECRET!
+    const folder    = 'rk-agro'
+    const timestamp = Math.floor(Date.now() / 1000)
 
-    // Generate signature: sha1(folder=...&timestamp=...&apiSecret)
-    const strToSign  = `folder=${folder}&timestamp=${timestamp}${apiSecret}`
-    const signature  = createHmac('sha1', apiSecret)
-      .update(`folder=${folder}&timestamp=${timestamp}`)
-      .digest('hex')
-
-    // Correct HMAC-less signature for Cloudinary (they use SHA1 of plain string)
-    const { createHash } = await import('crypto')
+    // Cloudinary signature: SHA1 of "folder=X&timestamp=Y" + apiSecret
     const sig = createHash('sha1')
       .update(`folder=${folder}&timestamp=${timestamp}${apiSecret}`)
       .digest('hex')
@@ -42,10 +35,14 @@ export async function POST(req: NextRequest) {
     )
 
     const data = await res.json()
-    if (!res.ok) throw new Error(data.error?.message || 'Upload failed')
+    if (!res.ok) {
+      console.error('Cloudinary error:', data)
+      throw new Error(data.error?.message || 'Upload failed')
+    }
 
     return NextResponse.json({ url: data.secure_url })
   } catch (e: any) {
+    console.error('Upload route error:', e)
     return NextResponse.json({ error: e.message }, { status: 500 })
   }
 }

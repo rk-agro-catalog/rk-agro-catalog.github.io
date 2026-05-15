@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Product } from '@/lib/useProducts'
 
 interface Props {
@@ -17,35 +17,43 @@ export default function ProductForm({ product, onSave, onCancel, uploadImage }: 
   const [handle,   setHandle]   = useState(product?.handle   || '')
   const [dims,     setDims]     = useState(product?.dims     || '')
   const [desc,     setDesc]     = useState(product?.desc     || '')
-  const [images,   setImages]   = useState<string[]>(product?.images || [])
+
+  // existing = already uploaded URLs, pending = new local files
+  const [existing, setExisting] = useState<string[]>(product?.images || [])
   const [pending,  setPending]  = useState<File[]>([])
   const [saving,   setSaving]   = useState(false)
-  const [upPct,    setUpPct]    = useState(0)
+  const [upStatus, setUpStatus] = useState('')
+
+  const totalCount = existing.length + pending.length
+
+  function addFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || [])
+    const canAdd = 4 - totalCount
+    if (canAdd <= 0) return
+    setPending(p => [...p, ...files.slice(0, canAdd)])
+    e.target.value = ''
+  }
 
   async function handleSave() {
     if (!model.trim() || !name.trim()) { alert('Model aur naam zaroori hai'); return }
     setSaving(true)
     try {
-      let allImages = [...images]
-      if (pending.length > 0) {
-        for (let i = 0; i < pending.length; i++) {
-          setUpPct(Math.round((i / pending.length) * 100))
-          const url = await uploadImage(pending[i])
-          allImages.push(url)
-        }
-        setUpPct(100)
-      }
-      await onSave({ model, name, category, blade, handle, dims, desc, images: allImages })
-    } finally {
-      setSaving(false)
-      setUpPct(0)
-    }
-  }
+      let allImages = [...existing]
 
-  function addFiles(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files || [])
-    setPending(p => [...p, ...files].slice(0, 4 - images.length))
-    e.target.value = ''
+      // Upload each pending file one by one
+      for (let i = 0; i < pending.length; i++) {
+        setUpStatus(`Image ${i + 1} of ${pending.length} upload ho rahi hai...`)
+        const url = await uploadImage(pending[i])
+        allImages.push(url)
+      }
+
+      setUpStatus('Saving...')
+      await onSave({ model, name, category, blade, handle, dims, desc, images: allImages })
+    } catch (err: any) {
+      alert('Error: ' + (err.message || 'Upload failed'))
+      setSaving(false)
+      setUpStatus('')
+    }
   }
 
   return (
@@ -72,38 +80,55 @@ export default function ProductForm({ product, onSave, onCancel, uploadImage }: 
         <textarea value={desc} onChange={e=>setDesc(e.target.value)} placeholder="Details..."/></div>
 
       <div className="ff">
-        <label>Images</label>
+        <label>Images ({totalCount}/4)</label>
         <div className="img-row">
-          {images.map((url, i) => (
+          {/* Already uploaded images */}
+          {existing.map((url, i) => (
             <div key={url} className="ithumb">
               <img src={url} alt="product"/>
-              <button className="rm" onClick={() => setImages(imgs => imgs.filter((_,j)=>j!==i))}>x</button>
+              <button className="rm" onClick={() => setExisting(imgs => imgs.filter((_,j)=>j!==i))}>x</button>
             </div>
           ))}
+
+          {/* Pending local files */}
           {pending.map((f, i) => (
             <div key={i} className="ithumb">
               <img src={URL.createObjectURL(f)} alt="pending"/>
               <button className="rm" onClick={() => setPending(p => p.filter((_,j)=>j!==i))}>x</button>
             </div>
           ))}
-          {images.length + pending.length < 4 && (
-            <label className="iadd" htmlFor="imgFile">+
-              <input id="imgFile" type="file" accept="image/*" multiple style={{display:'none'}} onChange={addFiles}/>
+
+          {/* Add button — only show if under 4 */}
+          {totalCount < 4 && (
+            <label className="iadd" htmlFor="imgFile">
+              +
+              <input
+                id="imgFile"
+                type="file"
+                accept="image/*"
+                multiple
+                style={{display:'none'}}
+                onChange={addFiles}
+              />
             </label>
           )}
         </div>
-        {saving && pending.length > 0 && (
-          <div className="up-prog">
-            <div style={{fontSize:11,color:'#2d7a1f'}}>Uploading... {upPct}%</div>
-            <div className="up-bg"><div className="up-fill" style={{width:`${upPct}%`}}></div></div>
+
+        {/* Upload progress */}
+        {saving && upStatus && (
+          <div className="up-prog" style={{marginTop:8}}>
+            <div style={{fontSize:11,color:'#2d7a1f',fontWeight:500}}>{upStatus}</div>
+            <div className="up-bg">
+              <div className="up-fill" style={{width: upStatus.includes('Saving') ? '100%' : '60%'}}/>
+            </div>
           </div>
         )}
       </div>
 
       <div className="f-acts">
-        <button className="f-cancel" onClick={onCancel}>Cancel</button>
+        <button className="f-cancel" onClick={onCancel} disabled={saving}>Cancel</button>
         <button className="f-save" onClick={handleSave} disabled={saving}>
-          {saving ? 'Saving...' : 'Save Product'}
+          {saving ? upStatus || 'Saving...' : 'Save Product'}
         </button>
       </div>
     </>
